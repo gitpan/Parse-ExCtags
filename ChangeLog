@@ -1,0 +1,6 @@
+
+0.01:
+	This version simple do a split/\t/, and return it as a hash,
+	while hash keys are the name of the fields.
+	According to http://ctags.sourceforge.net/FORMAT
+
