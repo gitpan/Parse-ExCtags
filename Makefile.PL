@@ -5,7 +5,7 @@ WriteMakefile(
     AUTHOR              => 'Kang-min Liu (gugod@gugod.org)',
     ABSTRACT            => 'Parse ExCtags tags file',
     NAME                => 'Parse::ExCtags',
-    VERSION		=> '0.01',
+    VERSION_FROM	=> 'lib/Parse/ExCtags.pm',
     DISTNAME            => 'Parse-ExCtags',
     PREREQ_PM           => {
     	'IO::All'	=> 0,

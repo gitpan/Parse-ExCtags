@@ -5,6 +5,9 @@ use IO::All;
 @EXPORT = qw(exctags);
 
 use strict;
+use vars qw/$VERSION/;
+
+$VERSION = '0.02';
 
 field file => '';
 field tags => [];
@@ -28,14 +31,46 @@ sub parse {
 	my($self,$forced) = @_;
 	$self->parsed(0) if $forced;
 	return $self->tags if($self->parsed);
-	my @lines = map {
-		{	name => $_->[0],
-			file => $_->[1],
-			address => $_->[2],
-			special => $_->[3], };
+	my $tags;
+	map { $tags->{$_->{'name'}} = $_ }
+	map { {	name => $_->[0],
+		file => $_->[1],
+		address => $_->[2],
+		field => $self->parse_tagfield($_->[3]), };
 	} map [split /\t/,$_,4], (@{io($self->file)});
 	$self->parsed(1);
-	$self->tags(\@lines);
+	$self->tags($tags);
+}
+
+sub parse_tagfield {
+	my($self,$field) = @_;
+	my $name_re = qr{[a-zA-Z]+};
+	my $value_re = qr{[\\a-zA-Z]*};
+	my $fields ;
+	foreach(split(/\t/,$field||=''))  {
+		my ($name,$value);
+		if(/($name_re):($value_re)/) {
+			$name = $1;
+			($value) = unescape_value($2);
+		} else {
+			$name = 'kind';
+			$value = $_;
+		}
+		$fields->{$name} = $value;
+	}
+	return $fields;
+}
+
+sub unescape_value {
+        my @new = @_;
+        my %tbl = (
+                '\\t'   => chr(9),
+                '\\r'   => chr(13),
+                '\\n'   => chr(10),
+                '\\\\'  => '\\',
+        );
+        for(@new) { s{\G(.*?)(\\.)}{$1 . ($tbl{$2}||$2)}ge; }
+        return @new;
 }
 
 =head1 NAME

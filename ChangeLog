@@ -1,4 +1,11 @@
 
+0.02:
+	Be able to handle tagfields. Replace the 'special' hash key
+	in previous version with 'field'.
+
+	The ->tags() now return a hashref of hashref, instead of
+	arrayref of hashref. You can use tag name as hash key.
+
 0.01:
 	This version simple do a split/\t/, and return it as a hash,
 	while hash keys are the name of the fields.

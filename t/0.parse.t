@@ -1,13 +1,17 @@
-#!/usr/bin/perl 
+#!/usr/bin/env perl
 
-use Test::Simple tests => 1;
-use YAML;
-
+use Test::Simple tests => 5;
 use Parse::ExCtags;
 
-my $tags = exctags(-file => 'tags');
+my $tags = exctags(-file => 'tags')->tags;
 
-print Dump $tags->tags;
+# Subroutines
+foreach(qw/unescape_value parse parse_tagfield paired_arguments/) {
+	ok($tags->{$_}->{field}->{kind} eq 'subroutine');
+}
 
-ok(1);
+# packages
+foreach(qw/Parse::ExCtags/) {
+	ok($tags->{$_}->{field}->{kind} eq 'package');
+}
 
