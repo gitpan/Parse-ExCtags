@@ -1,3 +1,7 @@
+0.04:
+	Add a "%kind_map" to lookup single-character map
+	in "tags" file.
+
 0.03:
 	This version changes nothing but documentation.
 

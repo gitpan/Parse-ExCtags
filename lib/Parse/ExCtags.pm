@@ -7,7 +7,7 @@ use IO::All;
 use strict;
 use vars qw/$VERSION/;
 
-$VERSION = '0.03';
+$VERSION = '0.04';
 
 field file => '';
 field tags => [];
@@ -47,28 +47,51 @@ sub parse_tagfield {
 	my $name_re = qr{[a-zA-Z]+};
 	my $value_re = qr{[\\a-zA-Z]*};
 	my $fields ;
-	foreach(split(/\t/,$field||=''))  {
+	for(split(/\t/,$field||=''))  {
 		my ($name,$value);
 		if(/($name_re):($value_re)/) {
 			$name = $1;
 			($value) = unescape_value($2);
 		} else {
 			$name = 'kind';
-			$value = $_;
+			$value = lookup_kind($_);
 		}
 		$fields->{$name} = $value;
 	}
 	return $fields;
 }
 
+my %kind_map =
+(
+ c => 'class',
+ d => 'define',
+ e => 'enumerator',
+ f => 'function',
+ F => 'file',
+ g => 'enumeration',
+ m => 'member',
+ p => 'function',
+ s => 'structure',
+ t => 'typedef',
+ u => 'union',
+ v => 'variable',
+);
+
+sub lookup_kind {
+	my $kind = shift;
+	return $kind_map{$kind} || $kind;
+}
+
+my %tbl =
+(
+ '\\t'   => chr(9),
+ '\\r'   => chr(13),
+ '\\n'   => chr(10),
+ '\\\\'  => '\\',
+);
+
 sub unescape_value {
         my @new = @_;
-        my %tbl = (
-                '\\t'   => chr(9),
-                '\\r'   => chr(13),
-                '\\n'   => chr(10),
-                '\\\\'  => '\\',
-        );
         for(@new) { s{\G(.*?)(\\.)}{$1 . ($tbl{$2}||$2)}ge; }
         return @new;
 }
@@ -112,7 +135,6 @@ modify it under the same terms as Perl itself.
 See <http://www.perl.com/perl/misc/Artistic.html>
 
 =cut
-
 
 1;
 
