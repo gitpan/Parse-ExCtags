@@ -7,7 +7,7 @@ use IO::All;
 use strict;
 use vars qw/$VERSION/;
 
-$VERSION = '0.02';
+$VERSION = '0.03';
 
 field file => '';
 field tags => [];
@@ -81,22 +81,26 @@ Parse::ExCtags - Parse ExCtags format of TAGS file
 
     use YAML;
     use Parse::ExCtags;
-    my $tags = exctags(-file => 'tags');
-    print Dump $tags->tags;
+    my $tags = exctags(-file => 'tags')->tags; # hashref
+    print Dump $tags;
 
 =head1 DESCRIPTION
 
 This module exports a exctags() function that returns a
 Parse::ExCtags object. The object has a tags() method 
-that return an arrayref of hashref which are tags
+that return an hashref of hashref which are tags
 presented in the file given by -file argument.
+
+The key to $tags is the 'tag name'. Usually a subroutine name
+or package name. The kind of this 'tag name' is optionally store
+in $tags->{field}->{kind}.
 
 Each hash has following keys:
 
 	name:	the tag name
 	file:	the associated file
 	adddress: the ex pattern to search this tag
-	special: anything behind that is not yet processed
+	field: tagfields, a hashref of hashref (name,value) pair.
 
 =head1 COPYRIGHT
 
