@@ -9,7 +9,7 @@ WriteMakefile(
     DISTNAME            => 'Parse-ExCtags',
     PREREQ_PM           => {
     	'IO::All'	=> 0,
-    	'Spiffy'	=> 0,
+    	'Spiffy'	=> 0.21,
     },
     dist                => {
         COMPRESS        => 'gzip -9',

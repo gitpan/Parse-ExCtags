@@ -1,26 +1,26 @@
 package Parse::ExCtags;
-use Spiffy '-base';
+use Spiffy -Base;
 use IO::All;
+use YAML;
+use vars qw/$VERSION @EXPORT/;
+our @EXPORT = qw(exctags);
 
-@EXPORT = qw(exctags);
-
-use strict;
-use vars qw/$VERSION/;
-
-$VERSION = '0.04';
+$VERSION = '0.05';
 
 field file => '';
 field tags => [];
 field parsed => 0;
 
-spiffy_constructor 'exctags';
+sub exctags() {
+    new(__PACKAGE__,@_);
+}
 
 sub paired_arguments { qw(-file) };
 
-sub new {
+sub new() {
 	my $class = shift;
 	my $self = {};
-	bless $self,$class;
+	bless $self;
 	my ($args) = $self->parse_arguments(@_);
 	$self->file($args->{-file} || 'tags');
 	$self->parse;
@@ -28,7 +28,7 @@ sub new {
 }
 
 sub parse {
-	my($self,$forced) = @_;
+	my $forced = shift;
 	$self->parsed(0) if $forced;
 	return $self->tags if($self->parsed);
 	my $tags;
@@ -37,16 +37,25 @@ sub parse {
 		file => $_->[1],
 		address => $_->[2],
 		field => $self->parse_tagfield($_->[3]), };
-	} map [split /\t/,$_,4], (@{io($self->file)});
+	} map $self->split_line($_), (@{io($self->file)});
 	$self->parsed(1);
 	$self->tags($tags);
 }
 
+sub split_line {
+    my ($line) = @_;
+    if($line =~ /^(.+?)\t(.+?)\t(\/\^.+")\t(.+)?$/) {
+        return [$1,$2,$3,$4]
+    } else {
+        return [split /\t/,$line,4]
+    }
+}
+
 sub parse_tagfield {
-	my($self,$field) = @_;
+	my $field = shift or return {};
 	my $name_re = qr{[a-zA-Z]+};
-	my $value_re = qr{[\\a-zA-Z]*};
-	my $fields ;
+	my $value_re = qr{[\\a-zA-Z\d]*};
+	my $fields;
 	for(split(/\t/,$field||=''))  {
 		my ($name,$value);
 		if(/($name_re):($value_re)/) {
@@ -61,38 +70,27 @@ sub parse_tagfield {
 	return $fields;
 }
 
-my %kind_map =
-(
- c => 'class',
- d => 'define',
- e => 'enumerator',
- f => 'function',
- F => 'file',
- g => 'enumeration',
- m => 'member',
- p => 'function',
- s => 'structure',
- t => 'typedef',
- u => 'union',
- v => 'variable',
-);
-
-sub lookup_kind {
-	my $kind = shift;
-	return $kind_map{$kind} || $kind;
+sub lookup_kind() {
+    my $kind = shift||'';
+    return {
+	    c => 'class',
+	    d => 'define',
+	    e => 'enumerator',
+	    f => 'function',
+	    F => 'file',
+	    g => 'enumeration',
+	    m => 'member',
+	    p => 'function',
+	    s => 'structure',
+	    t => 'typedef',
+	    u => 'union',
+	    v => 'variable',
+	   }->{$kind} || $kind;
 }
 
-my %tbl =
-(
- '\\t'   => chr(9),
- '\\r'   => chr(13),
- '\\n'   => chr(10),
- '\\\\'  => '\\',
-);
-
-sub unescape_value {
+sub unescape_value() {
         my @new = @_;
-        for(@new) { s{\G(.*?)(\\.)}{$1 . ($tbl{$2}||$2)}ge; }
+        for(@new) { s{\G(.*?)(\\.)}{$1 . ({'\\t' => chr(9), '\\r' => chr(13), '\\n' => chr(10), '\\\\'  => '\\',}->{$2}||$2)}ge; }
         return @new;
 }
 
@@ -136,5 +134,5 @@ See <http://www.perl.com/perl/misc/Artistic.html>
 
 =cut
 
-1;
+
 
