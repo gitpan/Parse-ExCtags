@@ -1,11 +1,10 @@
 package Parse::ExCtags;
 use Spiffy -Base;
 use IO::All;
-use YAML;
 use vars qw/$VERSION @EXPORT/;
 our @EXPORT = qw(exctags);
 
-$VERSION = '0.05';
+$VERSION = '0.06';
 
 field file => '';
 field tags => [];
@@ -33,7 +32,9 @@ sub parse {
 	return $self->tags if($self->parsed);
 	my $tags;
 	map { $tags->{$_->{'name'}} = $_ }
-	map { {	name => $_->[0],
+        map { 
+            $_->[2] =~ s{;"$}{};
+            {	name => $_->[0],
 		file => $_->[1],
 		address => $_->[2],
 		field => $self->parse_tagfield($_->[3]), };
@@ -103,7 +104,7 @@ Parse::ExCtags - Parse ExCtags format of TAGS file
     use YAML;
     use Parse::ExCtags;
     my $tags = exctags(-file => 'tags')->tags; # hashref
-    print Dump $tags;
+    print YAML::Dump $tags;
 
 =head1 DESCRIPTION
 
